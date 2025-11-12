@@ -1,5 +1,8 @@
 django
-Pillow
 djangorestframework
-setuptools
 django-cors-headers
+pillow
+setuptools
+drf-yasg
+coreapi
+djangorestframework-authtoken

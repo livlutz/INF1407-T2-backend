@@ -1,25 +1,40 @@
-
-from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from usuarios import views
-from django.contrib.auth.views import LoginView, LogoutView
-from django.urls import reverse_lazy
+from rest_framework import routers, permissions
+from rest_framework.documentation import include_docs_urls
+from rest_framework.schemas import get_schema_view
+from drf_yasg.views import get_schema_view as yasg_schema_view
+from drf_yasg import openapi
 
+schema_view = yasg_schema_view(
+    openapi.Info(
+        title="API de Usuários",
+        default_version='v1',
+        description="API para gerenciamento de usuários e autenticação",
+        contact=openapi.Contact(email="contato@receitas.com"),
+        license=openapi.License(name='BSD License'),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 # Define o namespace para as URLs do aplicativo de usuários
 app_name = 'usuarios'
 
 # Define as rotas URL para o aplicativo de usuários
 urlpatterns = [
-    path('login/', views.login, name='login'), #rota de login
-    path('cadastro/', views.UsuarioCreateView.as_view(), name='cadastro'), #rota de cadastro
-    path('perfil/<int:id>/', views.perfil, name='perfil'), #rota de perfil
-    path('perfil/deletar/<int:id>/', views.UsuarioDeleteView.as_view(), name='deletar'), #rota de deletar usuario
-    path('perfil/atualizar/<int:id>/', views.UsuarioUpdateView.as_view(), name='atualizar_perfil'), #rota de atualizar perfil
-    path('perfil/receitas/<int:id>/', views.ReceitaListView.as_view(), name='minhas_receitas'), #rota de receitas do usuario
-    path('logout/', views.logout_confirm, name='logout_confirm'), #rota de confirmação de logout
-    path('logout/real/', LogoutView.as_view(next_page=reverse_lazy('receitas:homepage')), name='logout'), #rota de logout
-    path('password_change_form/', views.MyPasswordChangeView.as_view(), name='sec-password-change'), #rota de mudança de senha
-    path('password_change_done', views.MyPasswordChangeDoneView.as_view(), name='sec-password-change-done'), #rota de mudança de senha concluída
-    path('perfil/ver_receitas/<int:id>/', views.ReceitaListView.as_view(), name='ver_minhas_receitas'), #rota de ver receitas do usuario
-    ]
+    path('login/', views.UsuarioLoginView.as_view(), name='login'), # rota de login
+    path('logout/', views.UsuarioLogoutView.as_view(), name='logout'), # rota de logout
+    path('cadastro/', views.UsuarioCreateView.as_view(), name='cadastro'), # rota de cadastro
+    path('perfil/<int:id>/', views.PerfilView.as_view(), name='perfil'), # rota de perfil
+    path('perfil/atualizar/<int:id>/', views.UsuarioUpdateView.as_view(), name='atualizar_perfil'), # rota de atualizar perfil
+    path('perfil/deletar/<int:id>/', views.UsuarioDeleteView.as_view(), name='deletar'), # rota de deletar usuario
+    path('perfil/receitas/<int:id>/', views.ReceitasUsuarioView.as_view(), name='minhas_receitas'), # rota de receitas do usuario
+    path('password_change/', views.PasswordChangeView.as_view(), name='password_change'), # rota de mudança de senha
+
+    # URLs para o swagger
+    path('docs/', include_docs_urls(title='Documentação da API Usuários')),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/v1/', include(routers.DefaultRouter().urls)),
+    path('openapi', get_schema_view(title="API para Usuários", description="API para gerenciamento de usuários e autenticação"), name='openapi-schema'),
+]

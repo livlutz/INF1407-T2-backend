@@ -28,7 +28,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 #CSRF_TRUSTED_ORIGINS = ['livialuiza.pythonanywhere.com', 'https://localhost:8000', 'http://localhost:8000']
-CSRF_TRUSTED_ORIGINS = ['https://localhost:8000', 'http://localhost:8000']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://localhost:8000',
+    'https://localhost:8000',
+    'https://silver-invention-7v9p45x674g3w54p-8080.app.github.dev',
+]
 
 
 # Application definition
@@ -44,7 +49,10 @@ INSTALLED_APPS = [
     "receitas",
     "usuarios",
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
+    'drf_yasg',
+    'coreapi',
 ]
 
 MIDDLEWARE = [
@@ -90,6 +98,16 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+
+
+# Para permitir CORS
+CORS_ORIGIN_WHITELIST = [
+    'https://silver-invention-7v9p45x674g3w54p-8080.app.github.dev',
+    # Adicione outras origens permitidas, se necessário
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -156,3 +174,10 @@ PASSWORD_RESET_CONFIRM_URL = 'usuarios:password_reset_confirm'
 PASSWORD_RESET_DONE_URL = 'usuarios:password_reset_done'
 PASSWORD_RESET_COMPLETE_URL = 'usuarios:password_reset_complete'
 
+#CONFIGURAÇÕES PARA O SWAGGER
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}

@@ -1,291 +1,273 @@
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic.base import View
-from django.http import HttpResponseRedirect
-from django.urls import reverse_lazy
-from usuarios.forms import CustomUserCreationForm, UsuarioLoginForm, UsuarioUpdateForm
+from django.shortcuts import get_object_or_404
 from usuarios.models import Usuario
 from receitas.models import Receita
-from django.contrib.auth import login as auth_login
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from usuarios.serializers import UsuarioSerializer, UsuarioCreateSerializer, UsuarioUpdateSerializer, ReceitaSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 # Create your views here.
 
-@login_required
-def logout_confirm(request):
-    """Função de confirmar logout
+class UsuarioLoginView(APIView):
+    """View de login do usuário."""
+    permission_classes = [AllowAny]
 
-    Args:
-        request (HttpRequest): A solicitação HTTP recebida.
-
-    Returns:
-        _type_: A resposta HTTP com a página de confirmação de logout.
-    """
-    return render(request, 'usuarios/logout.html')
-
-@login_required
-def perfil(request, id):
-    """Função de mostrar o perfil do usuario logado
-
-    Args:
-        request (HttpRequest): A solicitação HTTP recebida.
-        id (int): id do usuario logado.
-
-    Returns:
-        HttpResponse: A resposta HTTP com a página de perfil do usuário.
-    """
-    # Garante que o usuário está autenticado e é o dono do perfil
-    if not request.user.is_authenticated or request.user.id != int(id):
-        return redirect('receitas:homepage')  # ou mostre uma página de erro/permissão negada
-
-    usuario = get_object_or_404(Usuario, pk=id)
-
-    contexto = {
-        'usuario': usuario,
-        'titulo_janela': 'Perfil',
-        'titulo_pagina': 'Perfil do Usuário',
-    }
-
-    return render(request, 'usuarios/perfil.html', contexto)
-
-def login(request):
-    """Função de realizar login
-
-    Args:
-        request (HttpRequest): A solicitação HTTP recebida.
-
-    Returns:
-        _type_: httpResponse: A resposta HTTP com a página de login.
-    """
-    #se o método for post, tenta logar o usuario
-    if request.method == 'POST':
-        formulario = UsuarioLoginForm(request.POST)
-        if formulario.is_valid():
-            auth_login(request, formulario.user)
-            return redirect('receitas:homepage')
-
-    #se não, apenas mostra o formulário de login
-    else:
-        formulario = UsuarioLoginForm()
-
-    #conteúdo do contexto para renderizar o template
-    contexto = {
-        'formulario': formulario,
-        'titulo_janela': 'Login',
-        'titulo_pagina': 'Entrar',
-    }
-
-    #renderiza o template de login
-    return render(request, 'usuarios/login.html', contexto)
-
-
-class UsuarioCreateView(View):
-    """View de criação de usuário
-
-    Args:
-        View (class): Classe base para views baseadas em classe.
-    """
-    def get(self, request, *args, **kwargs):
-        """Exibe o formulário de criação de usuário
-
-        Args:
-            request (HttpRequest): A solicitação HTTP recebida.
-
-        Returns:
-            _type_: HttpResponse: A resposta HTTP com o formulário de criação de usuário.
-        """
-        contexto = { 'formulario': CustomUserCreationForm,
-                     'titulo_janela' : 'Cadastro',
-                    'titulo_pagina': 'Cadastrar Usuário',
-                    'botao' : 'Cadastrar',}
-
-        return render(request, "usuarios/cadastro.html", contexto)
-
+    @swagger_auto_schema(
+        operation_summary='Login de usuário',
+        operation_description='Realiza login e retorna token de autenticação.',
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['username', 'password'],
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING),
+                'password': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        responses={
+            200: openapi.Response(
+                description='Login realizado com sucesso',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'token': openapi.Schema(type=openapi.TYPE_STRING),
+                        'user': UsuarioSerializer,
+                    }
+                )
+            ),
+            400: 'Credenciais inválidas',
+        }
+    )
     def post(self, request, *args, **kwargs):
-        """função de postar o formulario de criação de usuario
+        """Realiza o login do usuário."""
+        username = request.data.get('username')
+        password = request.data.get('password')
 
-        Args:
-            request (HttpRequest): A solicitação HTTP recebida.
+        user = authenticate(username=username, password=password)
 
-        Returns:
-            HttpResponse: A resposta HTTP com o formulário de criação de usuário.
-        """
+        if user:
+            token, _ = Token.objects.get_or_create(user=user)
+            serializer = UsuarioSerializer(user)
+            return Response({
+                'token': token.key,
+                'user': serializer.data
+            }, status=status.HTTP_200_OK)
 
-        formulario = CustomUserCreationForm(request.POST)
+        return Response(
+            {'error': 'Credenciais inválidas'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        if formulario.is_valid():
-            usuario = formulario.save()
-            usuario.save()
-            return HttpResponseRedirect(reverse_lazy("receitas:homepage"))
 
-        else:
-            contexto = {'formulario': formulario, 'mensagem': 'Erro ao completar o cadastro!'}
-            return render(request, "usuarios/cadastro.html", contexto)
+class UsuarioLogoutView(APIView):
+    """View de logout do usuário."""
+    permission_classes = [IsAuthenticated]
 
-class UsuarioUpdateView(View):
-    """View de atualização de usuário
-
-    Args:
-        View (class): Classe base para views baseadas em classe.
-    """
-    def get(self, request, id, *args, **kwargs):
-        
-        """Exibe o formulário de atualização de usuário
-
-        Args:
-            request (HttpRequest): A solicitação HTTP recebida.
-            id (int): O ID do usuário a ser atualizado.
-
-        Returns:
-            HttpResponse: A resposta HTTP com o formulário de atualização de usuário.
-        """
-        # Garante que o usuário está autenticado e é o dono do perfil
-        if not request.user.is_authenticated or request.user.id != int(id):
-            return redirect('receitas:homepage')  # ou mostre uma página de erro/permissão negada
-        
-        usuario = get_object_or_404(Usuario, pk=self.kwargs['id'])
-
-        formulario = UsuarioUpdateForm(instance=usuario)
-
-        contexto = {
-            'formulario': formulario,
-            'usuario': usuario,
-            'titulo_janela': 'Atualizar Perfil',
-            'titulo_pagina': 'Atualizar Dados do Usuário',
-            'botao': 'Atualizar Perfil',
+    @swagger_auto_schema(
+        operation_summary='Logout de usuário',
+        operation_description='Realiza logout e deleta o token de autenticação.',
+        responses={
+            200: 'Logout realizado com sucesso',
+            401: 'Não autenticado'
         }
-        return render(request, 'usuarios/atualiza.html', contexto)
+    )
+    def post(self, request, *args, **kwargs):
+        """Realiza o logout do usuário."""
+        request.user.auth_token.delete()
+        return Response(
+            {'message': 'Logout realizado com sucesso'},
+            status=status.HTTP_200_OK
+        )
 
-    def post(self, request, id, *args, **kwargs):
-        """Atualiza os dados do usuário
 
-        Args:
-            request (HttpRequest): A solicitação HTTP recebida.
-            id (int): O ID do usuário a ser atualizado.
+class PerfilView(APIView):
+    """View de visualizar perfil do usuário."""
+    permission_classes = [IsAuthenticated]
 
-        Returns:
-            HttpResponse: A resposta HTTP com o formulário de atualização de usuário.
-        """
-        # Garante que o usuário está autenticado e é o dono do perfil
-        if not request.user.is_authenticated or request.user.id != int(id):
-            return redirect('receitas:homepage')  # ou mostre uma página de erro/permissão negada
-            
-        usuario = get_object_or_404(Usuario, pk=self.kwargs['id'])
-
-        formulario = UsuarioUpdateForm(request.POST, request.FILES, instance=usuario)
-
-        if formulario.is_valid():
-            formulario.save()
-            return HttpResponseRedirect(reverse_lazy('usuarios:perfil', kwargs={'id': id}))
-
-        else:
-            contexto = {
-                'formulario': formulario,
-                'usuario': usuario,
-                'titulo_janela': 'Atualizar Perfil',
-                'titulo_pagina': 'Atualizar Dados do Usuário',
-                'botao': 'Atualizar Perfil',
-            }
-
-            return render(request, 'usuarios/atualiza.html', contexto)
-
-class UsuarioDeleteView(View):
-    """View de deletar usuário
-
-    Args:
-        View (class): Classe base para views baseadas em classe.
-    """
-    def get(self, request, id, *args, **kwargs):
-        """Exibe a confirmação de deleção do usuário
-
-        Args:
-            request (HttpRequest): A solicitação HTTP recebida.
-            id (int): O ID do usuário a ser deletado.
-
-        Returns:
-            HttpResponse: A resposta HTTP com a confirmação de deleção do usuário.
-        """
-        # Garante que o usuário está autenticado e é o dono do perfil
-        if not request.user.is_authenticated or request.user.id != int(id):
-            return redirect('receitas:homepage')  # ou mostre uma página de erro/permissão negada
-        
-        usuario = get_object_or_404(Usuario, pk=self.kwargs['id'])
-
-        contexto = {
-            'usuario': usuario,
-            'titulo_janela': 'Deletar conta',
-            'titulo_pagina': 'Deletar Perfil do Usuário',
-            'botao': 'Deletar minha conta',
+    @swagger_auto_schema(
+        operation_summary='Ver perfil do usuário',
+        operation_description='Retorna os dados do perfil do usuário. Apenas o próprio usuário pode visualizar.',
+        responses={
+            200: UsuarioSerializer,
+            401: 'Não autenticado',
+            403: 'Sem permissão',
+            404: 'Usuário não encontrado'
         }
+    )
+    def get(self, request, id, *args, **kwargs):
+        """Retorna o perfil do usuário."""
+        if request.user.id != int(id):
+            return Response(
+                {'error': 'Você não tem permissão para visualizar este perfil.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-        return render(request, "usuarios/deletar.html", contexto)
+        usuario = get_object_or_404(Usuario, pk=id)
+        serializer = UsuarioSerializer(usuario)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request, id, *args, **kwargs):
-        """Realiza a deleção do usuário
 
-        Args:
-            request (HttpRequest): A solicitação HTTP recebida.
-            id (int): O ID do usuário a ser deletado.
+class UsuarioCreateView(APIView):
+    """View de criação de usuário."""
+    permission_classes = [AllowAny]
 
-        Returns:
-            HttpResponse: A resposta HTTP redirecionando para a página de login.
-        """
-        # Garante que o usuário está autenticado e é o dono do perfil
-        if not request.user.is_authenticated or request.user.id != int(id):
-            return redirect('receitas:homepage')  # ou mostre uma página de erro/permissão negada
-        
-        usuario = get_object_or_404(Usuario, pk=self.kwargs['id'])
+    @swagger_auto_schema(
+        operation_summary='Criar novo usuário',
+        operation_description='Cria um novo usuário no sistema.',
+        request_body=UsuarioCreateSerializer,
+        responses={
+            201: UsuarioSerializer,
+            400: 'Erro de validação'
+        }
+    )
+    def post(self, request, *args, **kwargs):
+        """Cria um novo usuário."""
+        serializer = UsuarioCreateSerializer(data=request.data)
+
+        if serializer.is_valid():
+            usuario = serializer.save()
+            token, _ = Token.objects.get_or_create(user=usuario)
+            return Response({
+                'user': UsuarioSerializer(usuario).data,
+                'token': token.key
+            }, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UsuarioUpdateView(APIView):
+    """View de atualização de usuário."""
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary='Atualizar dados do usuário',
+        operation_description='Atualiza os dados do usuário. Apenas o próprio usuário pode atualizar.',
+        request_body=UsuarioUpdateSerializer,
+        responses={
+            200: UsuarioSerializer,
+            400: 'Erro de validação',
+            401: 'Não autenticado',
+            403: 'Sem permissão',
+            404: 'Usuário não encontrado'
+        }
+    )
+    def put(self, request, id, *args, **kwargs):
+        """Atualiza os dados do usuário."""
+        if request.user.id != int(id):
+            return Response(
+                {'error': 'Você não tem permissão para atualizar este perfil.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        usuario = get_object_or_404(Usuario, pk=id)
+        serializer = UsuarioUpdateSerializer(usuario, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(UsuarioSerializer(usuario).data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UsuarioDeleteView(APIView):
+    """View de deletar usuário."""
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary='Deletar usuário',
+        operation_description='Deleta a conta do usuário. Apenas o próprio usuário pode deletar.',
+        responses={
+            204: 'Usuário deletado com sucesso',
+            401: 'Não autenticado',
+            403: 'Sem permissão',
+            404: 'Usuário não encontrado'
+        }
+    )
+    def delete(self, request, id, *args, **kwargs):
+        """Deleta o usuário."""
+        if request.user.id != int(id):
+            return Response(
+                {'error': 'Você não tem permissão para deletar este perfil.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        usuario = get_object_or_404(Usuario, pk=id)
         usuario.delete()
-        return HttpResponseRedirect(reverse_lazy("usuarios:login"))
+        return Response(
+            {'message': 'Usuário deletado com sucesso.'},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
-class ReceitaListView(View):
 
-    """View de listar as receitas do usuário
-    """
-    def get(self, request, id, *args, **kwargs):
-        """Exibe as receitas do usuário
+class ReceitasUsuarioView(APIView):
+    """View de listar receitas do usuário."""
+    permission_classes = [IsAuthenticated]
 
-        Args:
-            request (HttpRequest): A solicitação HTTP recebida.
-            id (int): O ID do usuário cujas receitas serão exibidas.
-
-        Returns:
-            HttpResponse: A resposta HTTP com as receitas do usuário.
-        """
-        # Garante que o usuário está autenticado e é o dono do perfil
-        if not request.user.is_authenticated or request.user.id != int(id):
-            return redirect('receitas:homepage')  # ou mostre uma página de erro/permissão negada
-        
-        usuario = Usuario.objects.get(pk=self.kwargs['id'])
-
-        receitas = Receita.objects.filter(autor=usuario)
-
-        contexto = {
-            'usuario': usuario,
-            'receitas': receitas,
-            'titulo_janela': 'Minhas Receitas',
-            'titulo_pagina': 'Receitas do Usuário',
+    @swagger_auto_schema(
+        operation_summary='Listar receitas do usuário',
+        operation_description='Retorna todas as receitas criadas pelo usuário. Apenas o próprio usuário pode visualizar.',
+        responses={
+            200: ReceitaSerializer(many=True),
+            401: 'Não autenticado',
+            403: 'Sem permissão',
+            404: 'Usuário não encontrado'
         }
+    )
+    def get(self, request, id, *args, **kwargs):
+        """Retorna as receitas do usuário."""
+        if request.user.id != int(id):
+            return Response(
+                {'error': 'Você não tem permissão para visualizar estas receitas.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-        return render(request, "usuarios/ver_minhas_receitas.html", contexto)
+        usuario = get_object_or_404(Usuario, pk=id)
+        receitas = Receita.objects.filter(autor=usuario).order_by('-id')
+        serializer = ReceitaSerializer(receitas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-class MyPasswordChangeView(LoginRequiredMixin,PasswordChangeView):
-    """View para alteração de senha do usuário
 
-    Args:
-        PasswordChangeView (class): Classe base para views de alteração de senha.
-    """
-    
-    template_name = 'usuarios/password_change_form.html'
-    success_url = reverse_lazy('usuarios:sec-password-change-done')
+class PasswordChangeView(APIView):
+    """View para alteração de senha."""
+    permission_classes = [IsAuthenticated]
 
-class MyPasswordChangeDoneView(LoginRequiredMixin,PasswordChangeDoneView):
-    """View para confirmação de alteração de senha do usuário
+    @swagger_auto_schema(
+        operation_summary='Alterar senha',
+        operation_description='Altera a senha do usuário autenticado.',
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['old_password', 'new_password'],
+            properties={
+                'old_password': openapi.Schema(type=openapi.TYPE_STRING),
+                'new_password': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        responses={
+            200: 'Senha alterada com sucesso',
+            400: 'Senha antiga incorreta ou senha nova inválida',
+            401: 'Não autenticado'
+        }
+    )
+    def post(self, request, *args, **kwargs):
+        """Altera a senha do usuário."""
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
 
-    Args:
-        PasswordChangeDoneView (class): Classe base para views de confirmação de alteração de senha.
-    """
-    template_name = 'usuarios/password_change_done.html'
+        if not request.user.check_password(old_password):
+            return Response(
+                {'error': 'Senha antiga incorreta.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        request.user.set_password(new_password)
+        request.user.save()
+
+        return Response(
+            {'message': 'Senha alterada com sucesso.'},
+            status=status.HTTP_200_OK
+        )
