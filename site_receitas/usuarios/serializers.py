@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from usuarios.models import Usuario
-from receitas.models import Receita
+from receitas.serializers import ReceitaSerializer
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -8,7 +8,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'foto', 'data_nascimento', 'date_joined']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'foto_de_perfil', 'date_joined']
         read_only_fields = ['id', 'date_joined']
 
 
@@ -19,7 +19,7 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name', 'foto', 'data_nascimento']
+        fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name', 'foto_de_perfil']
 
     def validate(self, data):
         if data['password'] != data['password_confirm']:
@@ -40,14 +40,4 @@ class UsuarioUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        fields = ['email', 'first_name', 'last_name', 'foto', 'data_nascimento']
-
-
-class ReceitaSerializer(serializers.ModelSerializer):
-    """Serializer para receitas (usado na listagem de receitas do usuário)."""
-    autor_nome = serializers.CharField(source='autor.username', read_only=True)
-
-    class Meta:
-        model = Receita
-        fields = '__all__'
-        read_only_fields = ['autor', 'id']
+        fields = ['email', 'first_name', 'last_name', 'foto_de_perfil']

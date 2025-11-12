@@ -10,9 +10,8 @@ schema_view = yasg_schema_view(
     openapi.Info(
         title="API de Usuários",
         default_version='v1',
-        description="API para gerenciamento de usuários e autenticação",
+        description="API para gerenciamento de usuários",
         contact=openapi.Contact(email="contato@receitas.com"),
-        license=openapi.License(name='BSD License'),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
@@ -36,5 +35,5 @@ urlpatterns = [
     path('docs/', include_docs_urls(title='Documentação da API Usuários')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/v1/', include(routers.DefaultRouter().urls)),
-    path('openapi', get_schema_view(title="API para Usuários", description="API para gerenciamento de usuários e autenticação"), name='openapi-schema'),
+    path('openapi', get_schema_view(title="API para Usuários", description="API para gerenciamento de usuários"), name='openapi-schema'),
 ]

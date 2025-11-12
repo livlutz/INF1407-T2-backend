@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404
 from usuarios.models import Usuario
 from receitas.models import Receita
-from usuarios.serializers import UsuarioSerializer, UsuarioCreateSerializer, UsuarioUpdateSerializer, ReceitaSerializer
+from usuarios.serializers import UsuarioSerializer, UsuarioCreateSerializer, UsuarioUpdateSerializer
+from receitas.serializers import ReceitaSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -25,8 +26,8 @@ class UsuarioLoginView(APIView):
             type=openapi.TYPE_OBJECT,
             required=['username', 'password'],
             properties={
-                'username': openapi.Schema(type=openapi.TYPE_STRING),
-                'password': openapi.Schema(type=openapi.TYPE_STRING),
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Nome de usuário'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='Senha', format='password'),
             },
         ),
         responses={
@@ -35,8 +36,17 @@ class UsuarioLoginView(APIView):
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'token': openapi.Schema(type=openapi.TYPE_STRING),
-                        'user': UsuarioSerializer,
+                        'token': openapi.Schema(type=openapi.TYPE_STRING, description='Token de autenticação'),
+                        'user': openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'username': openapi.Schema(type=openapi.TYPE_STRING),
+                                'email': openapi.Schema(type=openapi.TYPE_STRING),
+                                'first_name': openapi.Schema(type=openapi.TYPE_STRING),
+                                'last_name': openapi.Schema(type=openapi.TYPE_STRING),
+                            }
+                        ),
                     }
                 )
             ),
@@ -93,7 +103,7 @@ class PerfilView(APIView):
         operation_summary='Ver perfil do usuário',
         operation_description='Retorna os dados do perfil do usuário. Apenas o próprio usuário pode visualizar.',
         responses={
-            200: UsuarioSerializer,
+            200: UsuarioSerializer(),
             401: 'Não autenticado',
             403: 'Sem permissão',
             404: 'Usuário não encontrado'
@@ -121,7 +131,7 @@ class UsuarioCreateView(APIView):
         operation_description='Cria um novo usuário no sistema.',
         request_body=UsuarioCreateSerializer,
         responses={
-            201: UsuarioSerializer,
+            201: UsuarioSerializer(),
             400: 'Erro de validação'
         }
     )
@@ -149,7 +159,7 @@ class UsuarioUpdateView(APIView):
         operation_description='Atualiza os dados do usuário. Apenas o próprio usuário pode atualizar.',
         request_body=UsuarioUpdateSerializer,
         responses={
-            200: UsuarioSerializer,
+            200: UsuarioSerializer(),
             400: 'Erro de validação',
             401: 'Não autenticado',
             403: 'Sem permissão',
@@ -243,8 +253,8 @@ class PasswordChangeView(APIView):
             type=openapi.TYPE_OBJECT,
             required=['old_password', 'new_password'],
             properties={
-                'old_password': openapi.Schema(type=openapi.TYPE_STRING),
-                'new_password': openapi.Schema(type=openapi.TYPE_STRING),
+                'old_password': openapi.Schema(type=openapi.TYPE_STRING, description='Senha atual', format='password'),
+                'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='Nova senha', format='password'),
             },
         ),
         responses={
