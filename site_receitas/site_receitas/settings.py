@@ -63,6 +63,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = "site_receitas.urls"
@@ -104,6 +105,7 @@ DATABASES = {
 CORS_ORIGIN_WHITELIST = [
     'https://silver-invention-7v9p45x674g3w54p-8080.app.github.dev',
     # Adicione outras origens permitidas, se necessário
+    "https://glowing-robot-v9g5wgx46wrfp5xj-8080.app.github.dev",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
