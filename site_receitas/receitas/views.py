@@ -41,11 +41,12 @@ class PubReceitasListView(APIView):
 
     @swagger_auto_schema(
         operation_summary='Lista todas as receitas públicas',
-        operation_description='Retorna a lista de receitas públicas do banco de dados.',
+        operation_description='Mostra as receitas que têm visibilidade pública e não requer login.',
         responses={
             200: ReceitaSerializer(many=True),
         }
     )
+
     def get(self, request, *args, **kwargs):
         """Retorna a lista de receitas públicas."""
         receitas = Receita.objects.filter(visibilidade='pub').order_by('-id')
@@ -59,7 +60,7 @@ class ReceitasUpdateView(APIView):
 
     @swagger_auto_schema(
         operation_summary='Atualiza uma receita',
-        operation_description='Atualiza uma receita existente. Apenas o autor pode editar.',
+        operation_description='Atualiza uma receita existente e requer autenticação, apenas o autor da receita pode editá-la.',
         request_body=ReceitaSerializer,
         responses={
             200: ReceitaSerializer,
@@ -69,6 +70,7 @@ class ReceitasUpdateView(APIView):
             404: 'Receita não encontrada'
         }
     )
+
     def put(self, request, id, *args, **kwargs):
         """Atualiza uma receita."""
         receita = get_object_or_404(Receita, id=id)
@@ -94,15 +96,15 @@ class ReceitasDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_summary='Deleta uma receita',
-        operation_description='Deleta uma receita existente. Apenas o autor pode deletar.',
+        operation_summary='Deletar uma receita',
+        operation_description='Deleta uma receita existente. Requer autenticação, apenas o autor da receita pode deletá-la.',
         responses={
             204: 'Receita deletada com sucesso',
             401: 'Não autenticado',
             403: 'Sem permissão',
             404: 'Receita não encontrada'
         }
-    )
+    )#
     def delete(self, request, id, *args, **kwargs):
         """Deleta uma receita."""
         receita = get_object_or_404(Receita, id=id)
@@ -130,10 +132,11 @@ class VerReceita(APIView):
         operation_description='Retorna os detalhes de uma receita específica. Receitas privadas só podem ser visualizadas pelo autor.',
         responses={
             200: ReceitaSerializer,
-            403: 'Sem permissão para visualizar receita privada',
+            403: 'Esta receita é privada e você não tem permissão para visualizá-la.',
             404: 'Receita não encontrada'
         }
     )
+
     def get(self, request, id, *args, **kwargs):
         """Retorna os detalhes da receita."""
         receita = get_object_or_404(Receita, pk=id)

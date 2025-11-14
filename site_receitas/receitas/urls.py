@@ -30,7 +30,7 @@ urlpatterns = [
     path('deletar_receita/<int:id>/', views.ReceitasDeleteView.as_view(), name='deletar_receita'), #rota para deletar uma receita existente
 
     #URLs para o swagger
-    path('docs/', include_docs_urls(title='Documentação da API Receitas')),
+    #path('docs/', include_docs_urls(title='Documentação da API Receitas')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/v1/', include(routers.DefaultRouter().urls)),
     path('openapi', get_schema_view(title="API para Receitas", description="API para gerenciamento de receitas"), name='openapi-schema'),

@@ -20,8 +20,33 @@ class UsuarioLoginView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
+        operation_summary='Informações sobre login',
+        operation_description='Retorna informações sobre como fazer login. O token de autenticação será retornado ao fazer login com sucesso.',
+        responses={
+            200: openapi.Response(
+                description='Informações de login',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(type=openapi.TYPE_STRING),
+                        'instructions': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            )
+        }
+    )
+
+    def get(self, request, *args, **kwargs):
+        """Retorna informações sobre o login."""
+        return Response({
+            'message': 'Faça login para obter um token de autenticação.',
+            'instructions': 'Use seu username e senha para fazer login. O token será retornado na resposta.',
+            'required_fields': ['username', 'password']
+        }, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
         operation_summary='Login de usuário',
-        operation_description='Realiza login e retorna token de autenticação.',
+        operation_description='Realiza login.',
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=['username', 'password'],
@@ -53,6 +78,7 @@ class UsuarioLoginView(APIView):
             400: 'Credenciais inválidas',
         }
     )
+
     def post(self, request, *args, **kwargs):
         """Realiza o login do usuário."""
         username = request.data.get('username')
@@ -86,6 +112,7 @@ class UsuarioLogoutView(APIView):
             401: 'Não autenticado'
         }
     )
+
     def post(self, request, *args, **kwargs):
         """Realiza o logout do usuário."""
         request.user.auth_token.delete()
@@ -93,7 +120,6 @@ class UsuarioLogoutView(APIView):
             {'message': 'Logout realizado com sucesso'},
             status=status.HTTP_200_OK
         )
-
 
 class PerfilView(APIView):
     """View de visualizar perfil do usuário."""
@@ -109,6 +135,7 @@ class PerfilView(APIView):
             404: 'Usuário não encontrado'
         }
     )
+
     def get(self, request, id, *args, **kwargs):
         """Retorna o perfil do usuário."""
         if request.user.id != int(id):
@@ -120,7 +147,6 @@ class PerfilView(APIView):
         usuario = get_object_or_404(Usuario, pk=id)
         serializer = UsuarioSerializer(usuario)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class UsuarioCreateView(APIView):
     """View de criação de usuário."""
@@ -135,6 +161,7 @@ class UsuarioCreateView(APIView):
             400: 'Erro de validação'
         }
     )
+
     def post(self, request, *args, **kwargs):
         """Cria um novo usuário."""
         serializer = UsuarioCreateSerializer(data=request.data)
@@ -148,7 +175,6 @@ class UsuarioCreateView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class UsuarioUpdateView(APIView):
     """View de atualização de usuário."""
@@ -166,6 +192,7 @@ class UsuarioUpdateView(APIView):
             404: 'Usuário não encontrado'
         }
     )
+
     def put(self, request, id, *args, **kwargs):
         """Atualiza os dados do usuário."""
         if request.user.id != int(id):
@@ -183,7 +210,6 @@ class UsuarioUpdateView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class UsuarioDeleteView(APIView):
     """View de deletar usuário."""
     permission_classes = [IsAuthenticated]
@@ -198,6 +224,7 @@ class UsuarioDeleteView(APIView):
             404: 'Usuário não encontrado'
         }
     )
+
     def delete(self, request, id, *args, **kwargs):
         """Deleta o usuário."""
         if request.user.id != int(id):
@@ -213,7 +240,6 @@ class UsuarioDeleteView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
-
 class ReceitasUsuarioView(APIView):
     """View de listar receitas do usuário."""
     permission_classes = [IsAuthenticated]
@@ -228,6 +254,7 @@ class ReceitasUsuarioView(APIView):
             404: 'Usuário não encontrado'
         }
     )
+
     def get(self, request, id, *args, **kwargs):
         """Retorna as receitas do usuário."""
         if request.user.id != int(id):
@@ -240,7 +267,6 @@ class ReceitasUsuarioView(APIView):
         receitas = Receita.objects.filter(autor=usuario).order_by('-id')
         serializer = ReceitaSerializer(receitas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class PasswordChangeView(APIView):
     """View para alteração de senha."""
@@ -263,6 +289,7 @@ class PasswordChangeView(APIView):
             401: 'Não autenticado'
         }
     )
+
     def post(self, request, *args, **kwargs):
         """Altera a senha do usuário."""
         old_password = request.data.get('old_password')
