@@ -106,6 +106,8 @@ CORS_ORIGIN_WHITELIST = [
     'https://silver-invention-7v9p45x674g3w54p-8080.app.github.dev',
     # Adicione outras origens permitidas, se necessário
     "https://glowing-robot-v9g5wgx46wrfp5xj-8080.app.github.dev",
+    "https://orange-guacamole-45gqwjv7rq43jv67-8080.app.github.dev",
+
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
