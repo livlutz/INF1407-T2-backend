@@ -54,6 +54,9 @@ urlpatterns = [
     # Links para as URLs de usuários
     path('', include('usuarios.urls', namespace='usuarios')),
 
+    # Links para as URLs de accounts
+    path('', include('accounts.urls', namespace='accounts')),
+
     # URLs para o swagger
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

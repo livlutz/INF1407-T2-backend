@@ -49,10 +49,11 @@ INSTALLED_APPS = [
     "receitas",
     "usuarios",
     'rest_framework',
-    'rest_framework.authtoken',
     'corsheaders',
     'drf_yasg',
     'coreapi',
+    'accounts',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -184,6 +185,5 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ],
 }
