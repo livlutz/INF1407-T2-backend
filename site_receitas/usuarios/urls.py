@@ -22,14 +22,12 @@ app_name = 'usuarios'
 
 # Define as rotas URL para o aplicativo de usuários
 urlpatterns = [
-    path('login/', views.UsuarioLoginView.as_view(), name='login'), # rota de login
-    path('logout/', views.UsuarioLogoutView.as_view(), name='logout'), # rota de logout
     path('cadastro/', views.UsuarioCreateView.as_view(), name='cadastro'), # rota de cadastro
     path('perfil/<int:id>/', views.PerfilView.as_view(), name='perfil'), # rota de perfil
     path('perfil/atualizar/<int:id>/', views.UsuarioUpdateView.as_view(), name='atualizar_perfil'), # rota de atualizar perfil
     path('perfil/deletar/<int:id>/', views.UsuarioDeleteView.as_view(), name='deletar'), # rota de deletar usuario
     path('perfil/receitas/<int:id>/', views.ReceitasUsuarioView.as_view(), name='minhas_receitas'), # rota de receitas do usuario
-    path('password_change/', views.PasswordChangeView.as_view(), name='password_change'), # rota de mudança de senha
+    #path('password_change/', views.PasswordChangeView.as_view(), name='password_change'), # rota de mudança de senha
 
     # URLs para o swagger
     path('docs/', include_docs_urls(title='Documentação da API Usuários')),

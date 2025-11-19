@@ -1,16 +1,15 @@
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from receitas.models import Receita
 from receitas.serializers import ReceitaSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-# Create your views here.
-
-"""class ReceitasCreateView(APIView):
-    #View que cria uma nova receita.
+class ReceitasCreateView(APIView):
+    """View que cria uma nova receita."""
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
@@ -24,18 +23,19 @@ from drf_yasg import openapi
         }
     )
     def post(self, request, *args, **kwargs):
-        #Processa o formulário para criar uma nova receita.
+        """Processa o formulário para criar uma nova receita."""
         serializer = ReceitaSerializer(data=request.data)
 
         if serializer.is_valid():
             serializer.save(autor=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)"""
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PubReceitasListView(APIView):
     """View que lista as receitas públicas."""
+    permission_classes = [AllowAny]
 
     @swagger_auto_schema(
         operation_summary='Lista todas as receitas públicas',
@@ -44,7 +44,6 @@ class PubReceitasListView(APIView):
             200: ReceitaSerializer(many=True),
         }
     )
-
     def get(self, request, *args, **kwargs):
         """Retorna a lista de receitas públicas."""
         receitas = Receita.objects.filter(visibilidade='pub').order_by('-id')
@@ -52,8 +51,8 @@ class PubReceitasListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-"""class ReceitasUpdateView(APIView):
-    #View que atualiza uma receita. Apenas o autor pode editar.
+class ReceitasUpdateView(APIView):
+    """View que atualiza uma receita. Apenas o autor pode editar."""
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
@@ -68,9 +67,8 @@ class PubReceitasListView(APIView):
             404: 'Receita não encontrada'
         }
     )
-
     def put(self, request, id, *args, **kwargs):
-        #'Atualiza uma receita.
+        """Atualiza uma receita."""
         receita = get_object_or_404(Receita, id=id)
 
         # Verifica se o usuário é o autor da receita
@@ -90,7 +88,7 @@ class PubReceitasListView(APIView):
 
 
 class ReceitasDeleteView(APIView):
-    #View que deleta uma receita.
+    """View que deleta uma receita."""
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
@@ -102,9 +100,9 @@ class ReceitasDeleteView(APIView):
             403: 'Sem permissão',
             404: 'Receita não encontrada'
         }
-    )#
+    )
     def delete(self, request, id, *args, **kwargs):
-        #Deleta uma receita.
+        """Deleta uma receita."""
         receita = get_object_or_404(Receita, id=id)
 
         # Verifica se o usuário é o autor da receita
@@ -118,11 +116,12 @@ class ReceitasDeleteView(APIView):
         return Response(
             {'message': 'Receita deletada com sucesso.'},
             status=status.HTTP_204_NO_CONTENT
-        )"""
+        )
 
 
 class VerReceita(APIView):
     """View que exibe os detalhes de uma receita."""
+    permission_classes = [AllowAny]
 
     @swagger_auto_schema(
         operation_summary='Ver detalhes de uma receita',
@@ -133,7 +132,6 @@ class VerReceita(APIView):
             404: 'Receita não encontrada'
         }
     )
-
     def get(self, request, id, *args, **kwargs):
         """Retorna os detalhes da receita."""
         receita = get_object_or_404(Receita, pk=id)

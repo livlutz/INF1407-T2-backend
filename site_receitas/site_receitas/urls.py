@@ -43,19 +43,19 @@ urlpatterns = [
     path("admin/", admin.site.urls, name = 'admin'),
 
     # Links para as URLs de autenticação do Django
-    path('password_reset/', PasswordResetView.as_view(template_name='usuarios/password_reset_form.html', email_template_name='usuarios/password_reset_email.html'), name='password_reset'), #rota de reset de senha
-    path('password_reset/done/', PasswordResetDoneView.as_view(template_name='usuarios/password_reset_done.html'), name='password_reset_done'), #rota de reset de senha concluída
-    path('password_reset_confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(template_name='usuarios/password_reset_confirm.html'), name='password_reset_confirm'), #rota de confirmação de reset de senha
-    path('password_reset_complete/', PasswordResetCompleteView.as_view(template_name='usuarios/password_reset_complete.html'), name='password_reset_complete'), #rota de reset de senha completa
+    #path('password_reset/', PasswordResetView.as_view(template_name='usuarios/password_reset_form.html', email_template_name='usuarios/password_reset_email.html'), name='password_reset'), #rota de reset de senha
+    #path('password_reset/done/', PasswordResetDoneView.as_view(template_name='usuarios/password_reset_done.html'), name='password_reset_done'), #rota de reset de senha concluída
+    #path('password_reset_confirm/<uidb64>/<token>/', PasswordResetConfirmView.as_view(template_name='usuarios/password_reset_confirm.html'), name='password_reset_confirm'), #rota de confirmação de reset de senha
+    #path('password_reset_complete/', PasswordResetCompleteView.as_view(template_name='usuarios/password_reset_complete.html'), name='password_reset_complete'), #rota de reset de senha completa
 
     # Links para as URLs de receitas
-    path('', include('receitas.urls', namespace='receitas')),
+    path('receitas/', include('receitas.urls', namespace='receitas')),
 
     # Links para as URLs de usuários
-    path('', include('usuarios.urls', namespace='usuarios')),
+    path('usuarios/', include('usuarios.urls', namespace='usuarios')),
 
     # Links para as URLs de accounts
-    path('', include('accounts.urls', namespace='accounts')),
+    path('accounts/', include('accounts.urls', namespace='accounts')),
 
     # URLs para o swagger
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

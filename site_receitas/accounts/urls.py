@@ -6,5 +6,4 @@ app_name = 'accounts'
 
 urlpatterns = [
     path('token-auth/', views.CustomAuthToken.as_view(), name='token-auth'),
-
 ]

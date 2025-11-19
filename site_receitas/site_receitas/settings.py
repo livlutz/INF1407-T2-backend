@@ -162,9 +162,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 #sobrescreve os redirects de login e logout do django
-LOGIN_URL = 'usuarios:login'
-LOGIN_REDIRECT_URL = 'receitas:homepage'
-LOGOUT_REDIRECT_URL = 'receitas:homepage'
+LOGIN_URL = None
+LOGIN_REDIRECT_URL = None
+LOGOUT_REDIRECT_URL = None
 
 #configuração do email para redefinição de senha
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
