@@ -56,7 +56,7 @@ class CustomAuthToken(ObtainAuthToken):
 
     @swagger_auto_schema(
         operation_summary='Obtém o username do usuário',
-        operation_description="Retorna o username do usuário ou apenas visitante se o usuário não estiver autenticado",
+        operation_description="Retorna o username e ID do usuário ou apenas visitante se o usuário não estiver autenticado",
         security=[{'Token':[]}],
         manual_parameters=[
             openapi.Parameter(
@@ -69,10 +69,14 @@ class CustomAuthToken(ObtainAuthToken):
         ],
         responses={
             200: openapi.Response(
-                description='Nome do usuário',
+                description='Dados do usuário',
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
-                    properties={'username': openapi.Schema(type=openapi.TYPE_STRING)},
+                    properties={
+                        'username': openapi.Schema(type=openapi.TYPE_STRING),
+                        'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        'email': openapi.Schema(type=openapi.TYPE_STRING),
+                    },
                 ),
             )
         },
@@ -81,18 +85,22 @@ class CustomAuthToken(ObtainAuthToken):
     def get(self, request):
         '''
         Parâmetros: o token de acesso
-        Retorna: o username ou 'visitante'
+        Retorna: o username, id e email ou 'visitante'
         '''
         try:
             token = request.META.get('HTTP_AUTHORIZATION').split(' ')[1] # token
             token_obj = Token.objects.get(key=token)
             user = token_obj.user
 
-            return Response({'username': user.username}, status=status.HTTP_200_OK)
+            return Response({
+                'username': user.username,
+                'id': user.id,
+                'email': user.email,
+            }, status=status.HTTP_200_OK)
 
         except (Token.DoesNotExist, AttributeError):
 
-            return Response({'username': 'visitante'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'username': 'visitante', 'id': None}, status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema(
         operation_description='Realiza logout do usuário, apagando o seu token',
