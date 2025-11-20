@@ -27,7 +27,6 @@ urlpatterns = [
     path('perfil/atualizar/<int:id>/', views.UsuarioUpdateView.as_view(), name='atualizar_perfil'), # rota de atualizar perfil
     path('perfil/deletar/<int:id>/', views.UsuarioDeleteView.as_view(), name='deletar'), # rota de deletar usuario
     path('perfil/receitas/<int:id>/', views.ReceitasUsuarioView.as_view(), name='minhas_receitas'), # rota de receitas do usuario
-    #path('password_change/', views.PasswordChangeView.as_view(), name='password_change'), # rota de mudança de senha
 
     # URLs para o swagger
     path('docs/', include_docs_urls(title='Documentação da API Usuários')),
