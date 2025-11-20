@@ -24,6 +24,7 @@ from django.conf.urls.static import static
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from django.views.generic import RedirectView
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -41,6 +42,9 @@ schema_view = get_schema_view(
 urlpatterns = [
     #seria bom renomear o admin ou excluir, porem sem esse path nao conseguimos acessar o django admin
     path("admin/", admin.site.urls, name = 'admin'),
+
+    # Redirect root to swagger
+    path('', RedirectView.as_view(url='/swagger/', permanent=False), name='index'),
 
     # Links para as URLs de autenticação do Django
     #path('password_reset/', PasswordResetView.as_view(template_name='usuarios/password_reset_form.html', email_template_name='usuarios/password_reset_email.html'), name='password_reset'), #rota de reset de senha
