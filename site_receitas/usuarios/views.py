@@ -90,24 +90,41 @@ class UsuarioUpdateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UsuarioDeleteView(APIView):
-    """View para deletar o usuário."""
-    authentication_classes = [TokenAuthentication]
+    """View de deletar usuário."""
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         operation_summary='Deletar usuário',
-        operation_description='Deleta o usuário autenticado.',
+        operation_description='Deleta a conta do usuário. Apenas o próprio usuário pode deletar.',
         responses={
-            204: 'Usuário deletado com sucesso',
-            401: 'Não autenticado'
+            200: openapi.Response(
+                description='Usuário deletado com sucesso',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            ),
+            401: 'Não autenticado',
+            403: 'Sem permissão',
+            404: 'Usuário não encontrado'
         }
     )
+    def delete(self, request, id, *args, **kwargs):
+        """Deleta o usuário."""
+        if request.user.id != int(id):
+            return Response(
+                {'error': 'Você não tem permissão para deletar este perfil.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-    def delete(self, request, *args, **kwargs):
-        """Deleta o usuário autenticado."""
-        usuario = request.user
+        usuario = get_object_or_404(Usuario, pk=id)
         usuario.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'message': 'Usuário deletado com sucesso.'},
+            status=status.HTTP_200_OK  # Changed from 204 to 200
+        )
 
 class ReceitasUsuarioView(APIView):
     """View para listar as receitas do usuário."""

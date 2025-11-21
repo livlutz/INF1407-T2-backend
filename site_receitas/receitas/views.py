@@ -86,7 +86,6 @@ class ReceitasUpdateView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class ReceitasDeleteView(APIView):
     """View que deleta uma receita."""
     permission_classes = [IsAuthenticated]
@@ -95,7 +94,15 @@ class ReceitasDeleteView(APIView):
         operation_summary='Deletar uma receita',
         operation_description='Deleta uma receita existente. Requer autenticação, apenas o autor da receita pode deletá-la.',
         responses={
-            204: 'Receita deletada com sucesso',
+            200: openapi.Response(
+                description='Receita deletada com sucesso',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            ),
             401: 'Não autenticado',
             403: 'Sem permissão',
             404: 'Receita não encontrada'
@@ -115,9 +122,8 @@ class ReceitasDeleteView(APIView):
         receita.delete()
         return Response(
             {'message': 'Receita deletada com sucesso.'},
-            status=status.HTTP_204_NO_CONTENT
+            status=status.HTTP_200_OK 
         )
-
 
 class VerReceita(APIView):
     """View que exibe os detalhes de uma receita."""
