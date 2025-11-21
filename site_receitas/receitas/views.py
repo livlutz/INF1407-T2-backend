@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+
 class ReceitasCreateView(APIView):
     """View que cria uma nova receita."""
     permission_classes = [IsAuthenticated]
@@ -24,7 +25,7 @@ class ReceitasCreateView(APIView):
     )
     def post(self, request, *args, **kwargs):
         """Processa o formulário para criar uma nova receita."""
-        serializer = ReceitaSerializer(data=request.data)
+        serializer = ReceitaSerializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
             serializer.save(autor=request.user)
@@ -47,7 +48,7 @@ class PubReceitasListView(APIView):
     def get(self, request, *args, **kwargs):
         """Retorna a lista de receitas públicas."""
         receitas = Receita.objects.filter(visibilidade='pub').order_by('-id')
-        serializer = ReceitaSerializer(receitas, many=True)
+        serializer = ReceitaSerializer(receitas, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -71,20 +72,20 @@ class ReceitasUpdateView(APIView):
         """Atualiza uma receita."""
         receita = get_object_or_404(Receita, id=id)
 
-        # Verifica se o usuário é o autor da receita
         if request.user != receita.autor:
             return Response(
                 {'error': 'Você não tem permissão para editar esta receita.'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        serializer = ReceitaSerializer(receita, data=request.data, partial=True)
+        serializer = ReceitaSerializer(receita, data=request.data, partial=True, context={'request': request})
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ReceitasDeleteView(APIView):
     """View que deleta uma receita."""
@@ -112,7 +113,6 @@ class ReceitasDeleteView(APIView):
         """Deleta uma receita."""
         receita = get_object_or_404(Receita, id=id)
 
-        # Verifica se o usuário é o autor da receita
         if request.user != receita.autor:
             return Response(
                 {'error': 'Você não tem permissão para deletar esta receita.'},
@@ -122,8 +122,9 @@ class ReceitasDeleteView(APIView):
         receita.delete()
         return Response(
             {'message': 'Receita deletada com sucesso.'},
-            status=status.HTTP_200_OK 
+            status=status.HTTP_200_OK
         )
+
 
 class VerReceita(APIView):
     """View que exibe os detalhes de uma receita."""
@@ -149,5 +150,5 @@ class VerReceita(APIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
 
-        serializer = ReceitaSerializer(receita)
+        serializer = ReceitaSerializer(receita, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)

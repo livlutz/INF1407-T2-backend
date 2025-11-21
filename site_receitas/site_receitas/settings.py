@@ -28,6 +28,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 #CSRF_TRUSTED_ORIGINS = ['livialuiza.pythonanywhere.com', 'https://localhost:8000', 'http://localhost:8000']
+# Handle forwarded host headers from GitHub Codespaces
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 CSRF_TRUSTED_ORIGINS = [
     'https://localhost:8000',
