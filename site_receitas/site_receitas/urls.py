@@ -68,7 +68,9 @@ urlpatterns = [
     path('swagger.yaml', schema_view.without_ui(cache_timeout=0), name='schema-yaml'),
 ]
 
-# Serve media files in development
+# Serve media and static files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # Serve static files from STATICFILES_DIRS (where favicon.ico is located)
+    if settings.STATICFILES_DIRS:
+        urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
