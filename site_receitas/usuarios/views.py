@@ -11,11 +11,13 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 # Create your views here.
 
 class UsuarioCreateView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
     """View de criação de usuário."""
 
     @swagger_auto_schema(
@@ -42,7 +44,7 @@ class UsuarioCreateView(APIView):
             usuario = serializer.save()
             token, _ = Token.objects.get_or_create(user=usuario)
             return Response({
-                'user': UsuarioSerializer(usuario).data,
+                'user': UsuarioSerializer(usuario, context={'request': request}).data,
                 'token': token.key
             }, status=status.HTTP_201_CREATED)
 
@@ -69,6 +71,7 @@ class PerfilView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UsuarioUpdateView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
     """View para atualizar os dados do usuário."""
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -91,7 +94,7 @@ class UsuarioUpdateView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response(UsuarioSerializer(usuario).data, status=status.HTTP_200_OK)
+            return Response(UsuarioSerializer(usuario, context={'request': request}).data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
