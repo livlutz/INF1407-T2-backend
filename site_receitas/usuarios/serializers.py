@@ -32,15 +32,18 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
     class Meta:
+        """Meta class para o serializer de criação de usuário."""
         model = Usuario
         fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name', 'foto_de_perfil']
 
     def validate(self, data):
+        """Valida se as senhas coincidem."""
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError({'password_confirm': 'As senhas não coincidem.'})
         return data
 
     def create(self, validated_data):
+        """Cria um novo usuário e gera um token de autenticação."""
         validated_data.pop('password_confirm')
         user = Usuario.objects.create_user(**validated_data)
         Token.objects.create(user=user)

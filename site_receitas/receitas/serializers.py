@@ -8,6 +8,7 @@ class ReceitaSerializer(serializers.ModelSerializer):
     foto_da_receita = serializers.ImageField(required=False, allow_null=True, use_url=True)
 
     class Meta:
+        """Meta class para o serializer ReceitaSerializer."""
         model = Receita
         fields = [
             'id', 'autor_nome', 'titulo', 'ingredientes', 'modo_de_preparo',

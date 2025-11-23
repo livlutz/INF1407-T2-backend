@@ -29,7 +29,13 @@ class UsuarioCreateView(APIView):
     )
 
     def post(self, request, *args, **kwargs):
-        """Cria um novo usuário."""
+        """Cria um novo usuário.
+        
+        Args:
+            request (Request): Requisição HTTP com dados do usuário
+        Retorna:
+            Response: Resposta HTTP com dados do usuário criado ou erros de validação
+        """
         serializer = UsuarioCreateSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -141,7 +147,13 @@ class ReceitasUsuarioView(APIView):
     )
 
     def get(self, request, *args, **kwargs):
-        """Retorna todas as receitas do usuário autenticado."""
+        """Retorna todas as receitas do usuário autenticado.
+        
+        Args:
+            request (Request): Requisição HTTP com token de autenticação
+        Retorna:
+            Response: Resposta HTTP com lista de receitas do usuário
+        """
         usuario = request.user
         receitas = Receita.objects.filter(autor=usuario)
         serializer = ReceitaSerializer(receitas, many=True)
