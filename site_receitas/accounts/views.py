@@ -17,7 +17,10 @@ from rest_framework import status
 
 class CustomAuthToken(ObtainAuthToken):
     '''
-    view para gerenciamento de tokens de autenticação
+    View para gerenciamento de tokens de autenticação
+
+    Args:
+        ObtainAuthToken (ObtainAuthToken): View padrão do DRF para obtenção de tokens
     '''
 
     @swagger_auto_schema(
@@ -38,6 +41,12 @@ class CustomAuthToken(ObtainAuthToken):
     )
 
     def post(self, request, *args, **kwargs):
+        '''
+        Args:
+            request (Request): Requisição HTTP com username e password
+        Retorna:
+            Response: Resposta HTTP com o token ou erro de autenticação
+        '''
         serializer = self.serializer_class(data=request.data, context={'request': request})
 
         if serializer.is_valid():
@@ -84,8 +93,10 @@ class CustomAuthToken(ObtainAuthToken):
 
     def get(self, request):
         '''
-        Parâmetros: o token de acesso
-        Retorna: o username, id e email ou 'visitante'
+        Args:
+            request (Request): Requisição HTTP com token de autenticação
+        Retorna:
+            Response: Resposta HTTP com username e ID do usuário ou visitante
         '''
         try:
             token = request.META.get('HTTP_AUTHORIZATION').split(' ')[1] # token
@@ -123,6 +134,12 @@ class CustomAuthToken(ObtainAuthToken):
     )
 
     def delete(self, request):
+        '''
+        Args:
+            request (Request): Requisição HTTP com token de autenticação
+        Retorna:
+            Response: Resposta HTTP indicando sucesso ou falha no logout
+        '''
         try:
             token = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
             token_obj = Token.objects.get(key=token)
@@ -178,6 +195,12 @@ class CustomAuthToken(ObtainAuthToken):
     )
 
     def put(self, request):
+        '''
+        Args:
+            request (Request): Requisição HTTP com token de autenticação e senhas
+        Retorna:
+            Response: Resposta HTTP indicando sucesso ou falha na troca de senha
+        '''
         token = request.META.get('HTTP_AUTHORIZATION').split(' ')[1] # token
         token_obj = Token.objects.get(key=token)
         user = token_obj.user

@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404
 from receitas.models import Receita
+from django.db.models import Q
 from receitas.serializers import ReceitaSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.authentication import TokenAuthentication
 from drf_yasg import openapi
 
 
@@ -48,6 +50,31 @@ class PubReceitasListView(APIView):
     def get(self, request, *args, **kwargs):
         """Retorna a lista de receitas públicas."""
         receitas = Receita.objects.filter(visibilidade='pub').order_by('-id')
+        serializer = ReceitaSerializer(receitas, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class VisibleReceitasListView(APIView):
+    """View que lista as receitas públicas e privadas visíveis para o usuário."""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary='Lista todas as receitas públicas e privadas visíveis para o usuário',
+        operation_description='Mostra as receitas que têm visibilidade pública e privada visíveis para o usuário autenticado.',
+        responses={
+            200: ReceitaSerializer(many=True),
+            401: 'Não autenticado'
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        """Retorna a lista de receitas visíveis para o usuário.
+                
+        Args:
+            request (Request): Requisição HTTP com token de autenticação
+        Retorna:
+            Response: Resposta HTTP com lista de receitas visíveis para o usuário"""
+        usuario = request.user
+        receitas = Receita.objects.filter(Q(visibilidade='pub') | Q(autor=usuario)).order_by('-id')
         serializer = ReceitaSerializer(receitas, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 

@@ -17,7 +17,7 @@ class Usuario(AbstractUser):
     foto_de_perfil = models.ImageField(upload_to='usuarios/img', null=True, blank=True) # Foto de perfil do usuário
 
     class Meta:
-        """define o nome do app no admin do django.
+        """Define o nome do app no admin do django.
         """
         app_label = 'usuarios'
 
