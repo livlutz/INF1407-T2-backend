@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
 # Autenticação
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -12,6 +13,11 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.response import Response
 from rest_framework import status
+# Password Reset
+from django_rest_passwordreset.models import ResetPasswordToken
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 # Create your views here.
 
@@ -229,3 +235,133 @@ class CustomAuthToken(ObtainAuthToken):
 
         else:
             return Response({"old_password": ["Senha atual incorreta."]}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomPasswordResetView(APIView):
+    '''
+    View personalizada para reset de senha que retorna o token no response
+    para ser exibido no frontend
+    '''
+
+    @swagger_auto_schema(
+        operation_summary='Solicitar reset de senha',
+        operation_description='Gera um token de reset de senha e retorna no response para exibição no frontend',
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'email': openapi.Schema(type=openapi.TYPE_STRING, format='email'),
+            },
+            required=['email'],
+        ),
+        responses={
+            status.HTTP_200_OK: openapi.Response(
+                description='Token gerado com sucesso',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'status': openapi.Schema(type=openapi.TYPE_STRING),
+                        'token': openapi.Schema(type=openapi.TYPE_STRING),
+                    },
+                ),
+            ),
+            status.HTTP_400_BAD_REQUEST: 'Email inválido',
+        },
+    )
+    def post(self, request):
+        email = request.data.get('email')
+
+        if not email:
+            return Response({'error': 'Email é obrigatório'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+
+            # Remove tokens antigos do usuário
+            ResetPasswordToken.objects.filter(user=user).delete()
+
+            # Cria novo token
+            token = ResetPasswordToken.objects.create(user=user)
+
+            return Response({
+                'status': 'OK',
+                'token': token.key,
+                'message': 'Token de reset gerado com sucesso'
+            }, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            # Por segurança, retorna OK mesmo se usuário não existir
+            # Retorna estrutura consistente com campo token vazio
+            return Response({
+                'status': 'OK',
+                'token': None,
+                'message': 'Se o email existir, um token foi gerado'
+            }, status=status.HTTP_200_OK)
+
+
+class CustomPasswordResetConfirmView(APIView):
+    '''
+    View personalizada para confirmar reset de senha
+    Requer apenas token e nova senha (não precisa de email)
+    '''
+
+    @swagger_auto_schema(
+        operation_summary='Confirmar reset de senha',
+        operation_description='Confirma o reset de senha usando o token e define nova senha',
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'token': openapi.Schema(type=openapi.TYPE_STRING),
+                'password': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=['token', 'password'],
+        ),
+        responses={
+            status.HTTP_200_OK: openapi.Response(
+                description='Senha alterada com sucesso',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'status': openapi.Schema(type=openapi.TYPE_STRING),
+                        'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    },
+                ),
+            ),
+            status.HTTP_400_BAD_REQUEST: 'Token inválido ou expirado',
+        },
+    )
+    def post(self, request):
+        token = request.data.get('token')
+        password = request.data.get('password')
+
+        if not token or not password:
+            return Response({
+                'status': 'error',
+                'message': 'Token e senha são obrigatórios'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            reset_token = ResetPasswordToken.objects.get(key=token)
+
+            # Define a nova senha
+            user = reset_token.user
+            user.set_password(password)
+            user.save()
+
+            # Remove o token após uso
+            reset_token.delete()
+
+            return Response({
+                'status': 'OK',
+                'message': 'Senha alterada com sucesso'
+            }, status=status.HTTP_200_OK)
+
+        except ResetPasswordToken.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': 'Token inválido'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'message': f'Erro ao processar requisição: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

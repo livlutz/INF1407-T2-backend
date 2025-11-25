@@ -1,5 +1,7 @@
 from django.dispatch import receiver
 from django_rest_passwordreset.signals import reset_password_token_created
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, **kwargs):
@@ -14,6 +16,4 @@ def password_reset_token_created(sender, instance, reset_password_token, **kwarg
     :param kwargs:
     :return:
     """
-    # Token é criado automicamente pelo django_rest_passwordreset
-    # Frontend irá exibir as informações de reset ao invés de enviar email
     pass
