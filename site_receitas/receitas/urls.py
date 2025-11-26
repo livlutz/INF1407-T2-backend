@@ -23,8 +23,7 @@ app_name = 'receitas'
 
 # Guarda as rotas da aplicacao receitas
 urlpatterns = [
-    path('', views.PubReceitasListView.as_view(), name='homepage'), #rota da homepage
-    path('<int:id>/', views.VisibleReceitasListView.as_view(), name='receitas_visiveis'), #rota para listar receitas visiveis ao usuario autenticado
+    path('', views.VisibleReceitasListView.as_view(), name='homepage'), #rota para listar receitas visiveis ao usuario na homepagey
     path('receita/<int:id>/', views.VerReceita.as_view(), name='ver_receita'), #rota para ver uma receita especifica
     path('criar_receita/', views.ReceitasCreateView.as_view(), name='criar_receita'), #rota para criar uma nova receita
     path('editar_receita/<int:id>/', views.ReceitasUpdateView.as_view(), name='editar_receita'), #rota para editar uma receita
