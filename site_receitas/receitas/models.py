@@ -25,7 +25,28 @@ class Receita(models.Model):
 
     porcoes = models.IntegerField(help_text='Numero de porcoes/ Quantas pessoas serve') # Porções da receita
 
-    categoria = models.CharField(max_length=100, help_text='Categoria da receita (ex: sobremesa, prato principal, etc.)') # Categoria da receita
+    CATEGORIA_CHOICES = [
+        ('bolos', 'Bolos e tortas doces'),
+        ('carnes', 'Carnes'),
+        ('aves', 'Aves'),
+        ('peixes', 'Peixes e frutos do mar'),
+        ('saladas', 'Saladas, molhos e acompanhamentos'),
+        ('sopas', 'Sopas'),
+        ('massas', 'Massas'),
+        ('bebidas', 'Bebidas'),
+        ('doces', 'Doces e sobremesas'),
+        ('lanches', 'Lanches'),
+        ('saudavel', 'Alimentação saudável'),
+        ('unico', 'Prato único'),
+        ('outro', 'Outro'),
+    ]
+
+    categoria = models.CharField(
+        max_length=100, 
+        choices=CATEGORIA_CHOICES,
+        default='outro',
+        help_text='Categoria da receita'
+    ) # Categoria da receita
 
     foto_da_receita = models.ImageField(upload_to='receitas/img', null=True, blank=True) # Foto da receita
 

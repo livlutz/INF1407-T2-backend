@@ -21,6 +21,13 @@ class ReceitaModel2Form(forms.ModelForm):
         label='Visibilidade da Receita'
     )
 
+    # Campo de escolha de categoria
+    categoria = forms.ChoiceField(
+        choices=Receita.CATEGORIA_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label='Categoria da Receita'
+    )
+
     class Meta:
         """Classe de geração de formulário para atualização de receitas.
         """
@@ -54,10 +61,6 @@ class ReceitaModel2Form(forms.ModelForm):
                 'class': 'form-control',
                 'min': 1,
                 'placeholder': 'Número de porções'
-            }),
-            'categoria': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ex: sobremesa, prato principal'
             }),
             'foto_da_receita': forms.FileInput(attrs={
                 'class': 'form-control-file',
