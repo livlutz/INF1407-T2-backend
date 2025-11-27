@@ -161,3 +161,35 @@ class VerReceita(APIView):
 
         serializer = ReceitaSerializer(receita, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CategoriasListView(APIView):
+    """View que lista todas as categorias disponíveis."""
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_summary='Lista todas as categorias de receitas',
+        operation_description='Retorna uma lista com todas as categorias de receitas disponíveis no sistema.',
+        responses={
+            200: openapi.Response(
+                description='Lista de categorias',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'value': openapi.Schema(type=openapi.TYPE_STRING, description='Valor da categoria'),
+                            'label': openapi.Schema(type=openapi.TYPE_STRING, description='Nome da categoria'),
+                        }
+                    )
+                )
+            )
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        """Retorna a lista de categorias disponíveis."""
+        categorias = [
+            {'value': choice[0], 'label': choice[1]}
+            for choice in Receita.CATEGORIA_CHOICES
+        ]
+        return Response(categorias, status=status.HTTP_200_OK)

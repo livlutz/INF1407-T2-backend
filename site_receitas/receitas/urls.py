@@ -28,6 +28,7 @@ urlpatterns = [
     path('criar_receita/', views.ReceitasCreateView.as_view(), name='criar_receita'), #rota para criar uma nova receita
     path('editar_receita/<int:id>/', views.ReceitasUpdateView.as_view(), name='editar_receita'), #rota para editar uma receita
     path('deletar_receita/<int:id>/', views.ReceitasDeleteView.as_view(), name='deletar_receita'), #rota para deletar uma receita
+    path('categorias/', views.CategoriasListView.as_view(), name='categorias'), #rota para listar as categorias
 
     #URLs para o swagger
     #path('docs/', include_docs_urls(title='Documentação da API Receitas')),
