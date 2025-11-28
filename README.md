@@ -53,6 +53,105 @@ Disponível no repositório: https://github.com/livlutz/INF1407-T2-frontend
 
 - Conforme as especificações do trabalho no enunciado, não houve nenhuma funcionalidade que testamos e não funcionou
 
+## 🧪 Testes
+
+### Testes Funcionais de Autenticação
+
+#### 1. Cadastro de Usuário
+- [✅] Cadastrar novo usuário com todos os campos obrigatórios
+- [✅] Tentar cadastrar com email já existente (deve mostrar erro)
+- [✅] Cadastrar com e sem foto de perfil
+- [✅] Verificar validação de campos obrigatórios (deixar campos em branco)
+- [✅] Testar formato de email inválido
+
+#### 2. Login e Logout
+- [✅] Fazer login com credenciais válidas
+- [✅] Tentar login com credenciais inválidas (deve mostrar erro)
+- [✅] Verificar se o token é armazenado no localStorage após login
+- [✅] Fazer logout e verificar se o token é removido
+- [✅] Verificar se a navegação muda após login (navbar com opções do usuário)
+- [✅] Tentar acessar páginas protegidas sem estar logado
+
+#### 3. Gerenciamento de Perfil
+- [✅] Visualizar perfil próprio com dados corretos
+- [✅] Editar informações do perfil (nome, email, foto)
+- [✅] Trocar senha com sucesso
+- [✅] Recuperar senha com sucesso
+- [✅] Tentar trocar senha com senha antiga incorreta
+- [✅] Deletar conta e verificar se usuário é removido do sistema
+
+### Testes Funcionais de Receitas
+
+#### 4. Visualização de Receitas
+- [✅] Acessar homepage sem login e ver apenas receitas públicas
+- [✅] Acessar homepage logado e ver receitas públicas + próprias privadas
+- [✅] Clicar em uma receita e visualizar todos os detalhes
+- [✅] Verificar se imagens de receitas carregam corretamente
+- [✅] Verificar se placeholder aparece quando não há imagem
+
+#### 5. Criação de Receitas
+- [✅] Criar receita pública com todos os campos preenchidos
+- [✅] Criar receita privada
+- [✅] Criar receita com foto
+- [✅] Criar receita sem foto
+- [✅] Verificar validação de campos obrigatórios
+- [✅] Verificar se receita pública aparece na homepage
+- [✅] Verificar se receita privada NÃO aparece na homepage para outros usuários
+
+#### 6. Edição de Receitas
+- [✅] Editar receita própria (título, ingredientes, modo de preparo)
+- [✅] Mudar visibilidade de pública para privada e vice-versa
+- [✅] Adicionar/trocar foto da receita
+- [✅] Tentar editar receita de outro usuário (não deve permitir)
+- [✅] Verificar se mudanças são refletidas na visualização
+
+#### 7. Exclusão de Receitas
+- [✅] Deletar receita própria
+- [✅] Verificar confirmação antes de deletar
+- [✅] Verificar se receita é removida da homepage
+- [✅] Verificar se receita é removida do perfil
+- [✅] Tentar deletar receita de outro usuário (não deve permitir)
+
+### Testes de Interface e Usabilidade
+
+#### 8. Navegação
+- [✅] Testar todos os links da navbar
+- [✅] Verificar breadcrumbs e navegação entre páginas
+- [✅] Testar botão "voltar" do navegador
+- [✅] Verificar se redirecionamentos funcionam corretamente
+
+#### 9. Responsividade
+- [✅] Testar em desktop (1920x1080)
+- [✅] Verificar se imagens se adaptam ao tamanho da tela
+- [✅] Verificar se navbar é responsiva
+
+#### 10. Validação de Formulários
+- [✅] Verificar mensagens de erro em todos os formulários
+- [✅] Testar campos com valores extremos (textos muito longos)
+- [✅] Verificar feedback visual ao submeter formulários
+- [✅] Testar upload de arquivos (formatos válidos e inválidos)
+
+### Testes de Integração Backend-Frontend
+
+#### 11. Comunicação com API
+- [✅] Verificar no console do navegador se as requisições são feitas corretamente
+- [✅] Verificar tratamento de erros HTTP (404, 500, etc)
+- [✅] Testar timeout de requisições
+- [✅] Verificar se token de autenticação é enviado nos headers
+- [✅] Verificar URLs das requisições (devem estar corretas)
+
+#### 12. Persistência de Dados
+- [✅] Criar receita e verificar se persiste após refresh
+- [✅] Editar perfil e verificar se mudanças persistem
+- [✅] Fazer logout e login novamente, verificar se dados estão corretos
+
+### Testes de Segurança Básicos
+
+#### 13. Controle de Acesso
+- [✅] Verificar se receitas privadas não são acessíveis por outros usuários
+- [✅] Tentar acessar URLs de páginas protegidas sem login
+- [✅] Verificar se apenas o autor pode editar/deletar suas receitas
+
 
 ## 🚀 Instalação e Configuração Local
 
