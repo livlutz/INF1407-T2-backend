@@ -8,12 +8,14 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.parsers import MultiPartParser, FormParser
 from drf_yasg import openapi
 
 
 class ReceitasCreateView(APIView):
     """View que cria uma nova receita."""
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     @swagger_auto_schema(
         operation_summary='Criar nova receita',
@@ -64,6 +66,7 @@ class VisibleReceitasListView(APIView):
 class ReceitasUpdateView(APIView):
     """View que atualiza uma receita. Apenas o autor pode editar."""
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     @swagger_auto_schema(
         operation_summary='Atualiza uma receita',
@@ -86,6 +89,17 @@ class ReceitasUpdateView(APIView):
                 {'error': 'Você não tem permissão para editar esta receita.'},
                 status=status.HTTP_403_FORBIDDEN
             )
+
+        # If frontend signaled removal of current image, delete it
+        remover_foto = request.data.get('remover_foto')
+        if remover_foto in ['1', 'true', 'True', True, 1]:
+            if receita.foto_da_receita:
+                try:
+                    receita.foto_da_receita.delete(save=False)
+                except Exception:
+                    pass
+                receita.foto_da_receita = None
+                receita.save()
 
         serializer = ReceitaSerializer(receita, data=request.data, partial=True, context={'request': request})
 
