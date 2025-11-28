@@ -38,6 +38,14 @@ https://livialuizaback.pythonanywhere.com/
 
 ## Avaliação do trabalho
 
+### Imagens 
+
+![homepage](image.png)
+
+![receita](image-1.png)
+
+![criar receitas](image-2.png)
+
 ### 🌟 O que funcionou
 
 #### Sistema de Usuários
