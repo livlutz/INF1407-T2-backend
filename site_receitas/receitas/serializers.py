@@ -28,4 +28,13 @@ class ReceitaSerializer(serializers.ModelSerializer):
             else:
                 data['foto_da_receita'] = instance.foto_da_receita.url
 
+        # Representa a categoria como um objeto com label e value
+        try:
+            categoria_value = instance.categoria
+            categoria_label = instance.get_categoria_display()
+            data['categoria'] = {'value': categoria_value, 'label': categoria_label}
+        except Exception:
+            # se algo der errado, mantenha o valor bruto
+            data['categoria'] = getattr(instance, 'categoria', None)
+
         return data
